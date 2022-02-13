@@ -40,13 +40,21 @@ class FrameController(object):
 
         # Define Add bot form
         Label(master=self.sub_window, text='Name your Bot').grid(row=0)
-        self.bot_name = Entry(master=self.sub_window).grid(row=0, column=1, sticky='ew')
+        bot_name = Entry(master=self.sub_window)
+        bot_name.grid(row=0, column=1, sticky='ew')
+        self.bot_name = bot_name
         Label(master=self.sub_window, text='Enter your Bot Token').grid(row=1)
-        self.bot_token = Entry(master=self.sub_window).grid(row=1, column=1, sticky='ew')
+        bot_token = Entry(master=self.sub_window)
+        bot_token.grid(row=1, column=1, sticky='ew')
+        self.bot_token = bot_token
         Label(master=self.sub_window, text='Enter your Bot Proxy (Optional)').grid(row=2)
-        self.bot_proxy = Entry(master=self.sub_window).grid(row=2, column=1, sticky='ew')
+        bot_proxy = Entry(master=self.sub_window)
+        bot_proxy.grid(row=2, column=1, sticky='ew')
+        self.bot_proxy = bot_proxy
         Label(master=self.sub_window, text='Enter Discord Server ID').grid(row=3)
-        self.server_id = Entry(master=self.sub_window).grid(row=3, column=1, sticky='ew')
+        server_id = Entry(master=self.sub_window)
+        server_id .grid(row=3, column=1, sticky='ew')
+        self.server_id = server_id
         Button(self.sub_window, text='Connect Bot',
                command=self.add_bot_configuration).grid(row=4, columnspan=2)
         self.sub_window.columnconfigure(1, weight=1)
@@ -55,16 +63,26 @@ class FrameController(object):
     def add_bot_configuration(self):
         try:
             bot_configuration_file = open('./app/data/bots_configuration.json', 'r')
-            bot_configuration = json.loads(bot_configuration_file)
+            bot_configuration = json.load(bot_configuration_file)
             bot_configuration_file.close()
+            for account in bot_configuration['accounts']:
+                if self.bot_name.get() == account['name']:
+                    messagebox.showwarning(
+                        "Alert", "Bot server configuration already exists.")
+                    self.sub_window.destroy()
+                    raise
+
             new_bot_configuration = {
                 "name": self.bot_name,
                 "token": self.bot_token,
                 "proxy": self.bot_proxy,
+                "user_id": None,
+                "channelIDs_time": None,
+                "file_contaning_message": None
             }
-            bot_configuration['accounts'].append(new_bot_configuration)
-            bot_configuration_file = open('./app/data/bots_configuration.json', 'r')
-            json.dumps(bot_configuration, bot_configuration_file)
+
+            bot_configuration_file = open('./app/data/bots_configuration.json', 'w')
+            json.dump(bot_configuration, bot_configuration_file)
             bot_configuration_file.close()
             self.bot_creation_success_message()
 
