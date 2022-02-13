@@ -1,29 +1,77 @@
+import json
+from tkinter import Label, Button, Toplevel, messagebox, Canvas, Entry, W, E
 
 from app.components.frame_container import FrameContainer
 from app.components.menu_bar import MenuBar
-from app.components.sub_window import SubWindow
 from app.components.tab_manager import TabManager
 
 
 class FrameController(object):
 
-    @staticmethod
-    def build_frame(root):
-        root.title("Tab Widget")
-        root.geometry("600x400")
-        setup_menu_bar(root)
-        tab_manager = TabManager(root)
+    def __init__(self, root):
+        self.root = root
+        self.sub_window = None
+        self.bot_name = None
+        self.bot_token = None
+        self.bot_proxy = None
+        self.server_id = None
+
+    def build_frame(self):
+        self.root.title("Tab Widget")
+        self.root.geometry("600x400")
+        self.setup_menu_bar()
+        tab_manager = TabManager(self.root)
         tab_1 = FrameContainer(tab_manager)
         tab_1.include_components()
         tab_manager.add_tab(tab_1, 'Primer Tab')
         tab_manager.pack()
 
+    def setup_menu_bar(self):
+        menu_bar = MenuBar(self.root, 'File')
+        menu_bar.file_menu.add_command(label='Add Discord Bot', command=self.add_discord_bot)
+        menu_bar.file_menu.add_command(label='Exit', command=self.root.quit)
+        menu_bar.parent.config(menu=menu_bar)
 
-def setup_menu_bar(root):
-    menu_bar = MenuBar(root)
-    menu_bar.add_menu_command('Add Discord Bot', add_discord_bot(root))
-    menu_bar.add_menu_command('Exit', root.quit)
+    def add_discord_bot(self):
+        self.sub_window = Toplevel(self.root)
+        self.sub_window.geometry('600x120')
+        self.sub_window.resizable(True, False)
+        self.sub_window.wm_title('Add a new Discord Bot')
 
+        # Define Add bot form
+        Label(master=self.sub_window, text='Name your Bot').grid(row=0)
+        self.bot_name = Entry(master=self.sub_window).grid(row=0, column=1, sticky='ew')
+        Label(master=self.sub_window, text='Enter your Bot Token').grid(row=1)
+        self.bot_token = Entry(master=self.sub_window).grid(row=1, column=1, sticky='ew')
+        Label(master=self.sub_window, text='Enter your Bot Proxy (Optional)').grid(row=2)
+        self.bot_proxy = Entry(master=self.sub_window).grid(row=2, column=1, sticky='ew')
+        Label(master=self.sub_window, text='Enter Discord Server ID').grid(row=3)
+        self.server_id = Entry(master=self.sub_window).grid(row=3, column=1, sticky='ew')
+        Button(self.sub_window, text='Connect Bot',
+               command=self.add_bot_configuration).grid(row=4, columnspan=2)
+        self.sub_window.columnconfigure(1, weight=1)
+        self.sub_window.rowconfigure(4, weight=1)
 
-def add_discord_bot(parent):
-    SubWindow(parent, 'Add a new Discord Bot', 'Hello', 'Connect Bot')
+    def add_bot_configuration(self):
+        try:
+            bot_configuration_file = open('./app/data/bots_configuration.json', 'r')
+            bot_configuration = json.loads(bot_configuration_file)
+            bot_configuration_file.close()
+            new_bot_configuration = {
+                "name": self.bot_name,
+                "token": self.bot_token,
+                "proxy": self.bot_proxy,
+            }
+            bot_configuration['accounts'].append(new_bot_configuration)
+            bot_configuration_file = open('./app/data/bots_configuration.json', 'r')
+            json.dumps(bot_configuration, bot_configuration_file)
+            bot_configuration_file.close()
+            self.bot_creation_success_message()
+
+        except Exception as e:
+            print("Bot configuration file is corrupted or doesn't exist. " + e)
+
+    def bot_creation_success_message(self):
+        messagebox.showinfo(
+            "Confirmation", "Bot server configuration stored successfully")
+        self.sub_window.destroy()

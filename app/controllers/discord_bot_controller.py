@@ -43,6 +43,10 @@ class BotController(commands.Cog):
     async def on_ready(self):
         await self.bot.change_presence(activity=Activity(type=ActivityType.watching, name="_help"))
         print('My bot is ready')
+        print('Logged in as')
+        print(self.bot.user.name)
+        print(self.bot.user.id)
+        print('------')
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):

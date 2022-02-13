@@ -14,8 +14,8 @@ def start_discord_bot():
 
 def start_frame_thread():
     root = tk.Tk()
-    frame_controller = FrameController()
-    frame_controller.build_frame(root)
+    frame_controller = FrameController(root)
+    frame_controller.build_frame()
     root.mainloop()
 
 
